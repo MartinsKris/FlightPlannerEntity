@@ -2,8 +2,6 @@
 using FlightPlanner.Core.DTO;
 using FlightPlanner.Core.Models;
 using FlightPlanner.Core.Services;
-using FlightPlanner.Data;
-using FlightPlanner.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 
@@ -13,23 +11,23 @@ namespace FlightPlanner3rd.Controllers
     [ApiController]
     public class ClientApiController : ControllerBase
     {
-        private readonly IFlightPlannerDbContext _context;
         private readonly IMapper _mapper;
         private readonly IAirportService _airportService;
+        private readonly IFlightService _flightService;
 
-        public ClientApiController(IFlightPlannerDbContext context, IMapper mapper, IAirportService airportService)
+        public ClientApiController(IMapper mapper, 
+            IAirportService airportService, IFlightService flightService)
         {
-            _context = context;
             _mapper = mapper;
             _airportService = airportService;
+            _flightService = flightService;
         }
 
         [HttpGet]
         [Route("airports")]
         public IActionResult FindAirport(string search)
         {
-            var airportStorage = new AirportService(_context);
-            var airport = airportStorage.FindAirport(search);
+            var airport = _airportService.FindAirport(search);
             var mappedAirport = _mapper.Map<AirportResponse>(airport);
 
             if (mappedAirport == null)
@@ -46,14 +44,13 @@ namespace FlightPlanner3rd.Controllers
         [Route("flights/{id}")]
         public IActionResult SearchFlightById(int id)
         {
-            var flightStorage = new FlightService(_context);
-            var flight = flightStorage.GetFullFlightById(id);
-            var xx = _mapper.Map<FlightResponse>(flight);
+            var flightById = _flightService.GetFullFlightById(id);
+            var flight = _mapper.Map<FlightResponse>(flightById);
 
-            if (flight == null)
+            if (flightById == null)
                 return NotFound();
 
-            return Ok(xx);
+            return Ok(flight);
         }
 
         [HttpPost]
@@ -65,9 +62,7 @@ namespace FlightPlanner3rd.Controllers
                 return BadRequest();
             }
 
-            var flightStorage = new FlightService(_context);
-
-            return Ok(flightStorage.FindFlight(flight));
+            return Ok(_flightService.FindFlight(flight));
         }
     }
 }

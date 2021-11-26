@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
-using FlightPlanner.Data;
-using FlightPlanner.Services;
 
 namespace FlightPlanner3rd.Controllers
 {
@@ -19,16 +17,13 @@ namespace FlightPlanner3rd.Controllers
         private readonly IFlightService _flightService;
         private readonly IMapper _mapper;
         private readonly IEnumerable<IValidator> _validators;
-        private readonly IFlightPlannerDbContext _context;
         private static readonly object _objLock = new object();
 
-        public AdminApiController(IFlightService flightService, IMapper mapper, IEnumerable<IValidator> validators,
-            IFlightPlannerDbContext context)
+        public AdminApiController(IFlightService flightService, IMapper mapper, IEnumerable<IValidator> validators)
         {
             _flightService = flightService;
             _mapper = mapper;
             _validators = validators;
-            _context = context;
         }
 
         [HttpGet]
@@ -67,9 +62,7 @@ namespace FlightPlanner3rd.Controllers
         [Route("flights/{id}")]
         public IActionResult DeleteFlight(int id)
         {
-            FlightService accesFlightService = new FlightService(_context);
-
-            accesFlightService.DeleteFlight(id);
+            _flightService.DeleteFlight(id);
 
             return Ok();
         }
